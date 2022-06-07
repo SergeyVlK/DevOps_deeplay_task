@@ -1,0 +1,14 @@
+[Unit]
+Description=Deeplay Java-app daemon
+
+[Service]
+Type=simple
+WorkingDirectory=/home/sergey/DevOpsTask2
+ExecStart=/usr/bin/java -jar app.jar /home/sergey/DevOpsTask2/file.txt "Service is working!"
+ExecStop=/usr/bin/kill -9 $MAINPID
+User=sergey
+Restart=on-failure
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target

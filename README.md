@@ -94,12 +94,95 @@ m85486u/k7kkjklij
 
 Первое, что хочется сделать - посмотреть доступный исходный код приложения(частично есть такая возможность).
 
-IntelliJ IDEA Community Edition может показать код файла [`App.class`](task2_source/App.java). Изучив код, мы можем понять, что приложение
+IntelliJ IDEA Community Edition может показать код файла [App.class(App.java)](task2/App.java). Изучив код, мы можем понять, что приложение
 каждые 2 секунды пишет в файл(путь до него передается первым параметром) сообщение(передается вторым параметром).
 
 Теперь, стоит запустить и понаблюдать за работой и результатом работы приложения.
 
-Запустим его приведенной в задании командой в виртальной машине (GNOME Boxes) Ubuntu 22.04 .
+Запустили его приведенной в задании командой в виртальной машине (GNOME Boxes) Ubuntu 22.04 .
+Убедились, что приложение создает файл и пишет в него сообщения.
 
+Что бы написать демон - достаточно создать файл `название.service`, расположить
+его в каталоге `/etc/systemd/system/` и перезагрузить systemd командой `systemctl daemon-reload`
 
+#### Решение и объяснение
 
+Создадим файл [AppDevOpsTask.service](task2/AppDevOpsTask.service) со 
+следующим содержимым:
+
+```ini
+[Unit]
+Description=Deeplay Java-app daemon
+
+[Service]
+Type=simple
+WorkingDirectory=/home/sergey/DevOpsTask2
+ExecStart=/usr/bin/java -jar app.jar /home/sergey/DevOpsTask2/file.txt "Service is working!"
+ExecStop=/usr/bin/kill -9 $MAINPID
+User=sergey
+Restart=on-failure
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Переместим этот файл в каталог `/etc/systemd/system/`
+и выполним команду:
+```shell
+systemctl daemon-reload
+```
+
+Для запуска демона используем команду:
+```shell
+systemctl start AppDevOpsTask.service
+```
+Для остановки демона используем команду:
+```shell
+systemctl stop AppDevOpsTask.service
+```
+
+В результате работы приложения создается(если не существует) [файл](task2/file.txt), в
+него каждые 2 секунды дописывается строка. Содердимое файла выглядит
+следующим образом:
+```
+1) 07.06.2022 16:06:27   Service is working!
+2) 07.06.2022 16:06:30   Service is working!
+3) 07.06.2022 16:06:32   Service is working!
+4) 07.06.2022 16:06:34   Service is working!
+5) 07.06.2022 16:06:36   Service is working!
+6) 07.06.2022 16:06:38   Service is working!
+7) 07.06.2022 16:06:40   Service is working!
+8) 07.06.2022 16:06:42   Service is working!
+9) 07.06.2022 16:06:44   Service is working!
+10) 07.06.2022 16:06:46   Service is working!
+11) 07.06.2022 16:06:48   Service is working!
+1) 07.06.2022 16:08:12   Service is working!
+2) 07.06.2022 16:08:14   Service is working!
+3) 07.06.2022 16:08:16   Service is working!
+4) 07.06.2022 16:08:18   Service is working!
+5) 07.06.2022 16:08:20   Service is working!
+6) 07.06.2022 16:08:22   Service is working!
+7) 07.06.2022 16:08:24   Service is working!
+8) 07.06.2022 16:08:26   Service is working!
+9) 07.06.2022 16:08:28   Service is working!
+10) 07.06.2022 16:08:30   Service is working!
+11) 07.06.2022 16:08:32   Service is working!
+12) 07.06.2022 16:08:34   Service is working!
+13) 07.06.2022 16:08:36   Service is working!
+14) 07.06.2022 16:08:38   Service is working!
+15) 07.06.2022 16:08:40   Service is working!
+16) 07.06.2022 16:08:42   Service is working!
+17) 07.06.2022 16:08:44   Service is working!
+18) 07.06.2022 16:08:46   Service is working!
+19) 07.06.2022 16:08:48   Service is working!
+20) 07.06.2022 16:08:50   Service is working!
+21) 07.06.2022 16:08:52   Service is working!
+22) 07.06.2022 16:08:54   Service is working!
+23) 07.06.2022 16:08:56   Service is working!
+```
+
+Что бы приложение стартовало при включении системы необходимо выплнить команду:
+```shell
+systemctl enabled AppDevOpsTask.service
+```
